@@ -4,8 +4,7 @@
 
 | 模板 | 用途 | 状态 |
 | --- | --- | --- |
-| [openocd/nucleo-c542rc.cfg](openocd/nucleo-c542rc.cfg) | OpenOCD 板级配置 | ⏳ 待 OpenOCD 支持 STM32C5 |
-| [clion/README.md](clion/README.md) | CLion Embedded GDB Server 调试参数 | ✅ 可用（待实机复核） |
+| [clion/README.md](clion/README.md) | CLion 内置 ST-LINK 调试参数 | ✅ 可用（待实机复核） |
 | [project-template/README.md](project-template/README.md) | 新工程建设检查清单 | ✅ 可用 |
 
 ## 使用方式

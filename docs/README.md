@@ -8,7 +8,7 @@ NUCLEO-C542RC 开发板的中文文档。建议按顺序阅读，遇到问题先
 | [02-环境搭建](02-环境搭建.md) | macOS 安装 CubeMX2 / CubeCLT / CLion，校验 ST-LINK | 第一次上手 |
 | [03-CubeMX2创建工程](03-CubeMX2创建工程.md) | 从 Board 创建工程、点灯、生成 CMake | 第一次建工程 |
 | [04-CLion导入编译调试](04-CLion导入编译调试.md) | 打开 CMake 工程、编译、断点调试、外设寄存器 | 日常开发 |
-| [05-烧录与命令行调试](05-烧录与命令行调试.md) | CubeProgrammer CLI、GDB server、OpenOCD 现状 | 命令行 / CI |
+| [05-下载与调试](05-下载与调试.md) | CLion 内置 ST-LINK 下载/调试、串口、CLI 兜底 | 日常开发 / CI |
 | [06-常见问题](06-常见问题.md) | 连接、串口、生成器、工具链问题排查 | 出问题时 |
 
 ## 文档版本

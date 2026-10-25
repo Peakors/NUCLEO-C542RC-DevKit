@@ -25,14 +25,13 @@
 | [docs/02-环境搭建.md](docs/02-环境搭建.md) | macOS 上安装 CubeMX2、CubeCLT、CLion，校验 ST-LINK |
 | [docs/03-CubeMX2创建工程.md](docs/03-CubeMX2创建工程.md) | 用 CubeMX2 建 NUCLEO-C542RC 工程、点灯、生成 CMake |
 | [docs/04-CLion导入编译调试.md](docs/04-CLion导入编译调试.md) | CLion 打开工程、编译、ST-LINK 断点调试、外设寄存器 |
-| [docs/05-烧录与命令行调试.md](docs/05-烧录与命令行调试.md) | CubeProgrammer CLI、GDB server、OpenOCD 现状 |
+| [docs/05-下载与调试.md](docs/05-下载与调试.md) | CLion 内置 ST-LINK 下载/调试、串口、CLI 兜底 |
 | [docs/06-常见问题.md](docs/06-常见问题.md) | 连接、串口、生成器、CMake/pack 等高频问题 |
 
 ## 模板
 
 | 模板 | 用途 |
 | --- | --- |
-| [templates/openocd/nucleo-c542rc.cfg](templates/openocd/nucleo-c542rc.cfg) | OpenOCD 配置（待 OpenOCD 支持 C5 后启用） |
 | [templates/clion/README.md](templates/clion/README.md) | CLion 中 ST-LINK GDB server 调试配置参数 |
 | [templates/project-template/README.md](templates/project-template/README.md) | 新建工程时复制使用的检查清单 |
 
@@ -58,7 +57,7 @@
 
 - ✅ 仓库、文档骨架、模板已就绪
 - ⏳ 待补充：CubeMX2 实操截图、`projects/` 示例工程、printf 重定向示例
-- ⚠️ 本机 OpenOCD 0.12 不支持 STM32C5，下载/调试请用 ST-LINK GDB server 或 CubeProgrammer
+- ✅ 下载/调试统一使用 CLion 内置 ST-LINK（不使用 OpenOCD）
 
 ## 许可证
 

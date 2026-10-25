@@ -9,7 +9,8 @@
 
 - 主题：**NUCLEO-C542RC** 开发板（MCU：STM32C542RCT6，Arm Cortex-M33，最高 144 MHz）。
 - 形态：**学习 / 示例 / 模板仓库**，由「文档 + 可复制模板」组成，不是量产固件仓库。
-- 主线工具链：**STM32CubeMX2 → CMake 工程 → CLion → ST-LINK**（板载 STLINK-V3EC），宿主系统为 macOS（Apple Silicon）。
+- 主线工具链：**STM32CubeMX2 → CMake 工程 → CLion → CLion 内置 ST-LINK**（板载 STLINK-V3EC），宿主系统为 macOS（Apple Silicon）。
+- **调试与下载只用 CLion 自带的 ST-LINK 支持，不使用 OpenOCD。**
 - 当前阶段：文档与模板建设中。`projects/` 目录下目前没有实际工程，新增工程请遵循第 4 节约定。
 
 ## 2. 硬性规则
@@ -21,6 +22,10 @@
 5. **不执行破坏性 Git 操作。** 禁止 `git push --force`、`git reset --hard` 到远端已有提交、改写历史、删除远端分支，除非用户逐条确认。
 6. **文档必须可复现。** 每个操作步骤都要写清「界面路径 / 命令 / 预期结果」；未实测的内容用 `> ⚠️ 未实测：<依据>` 标注。
 7. **改动后自检。** 新增/修改文档后，至少检查链接、命令路径、版本号是否与第 3 节一致。
+8. **每次改动都要写 `git commit`。** 每完成一个可独立描述的改动（新增文档、修正一处错误、调整一个配置）就立即提交，**不要积累大量未提交改动**：
+   - 提交信息用 `type(scope): summary`，例如 `docs(stlink): 改用 CLion 内置 ST-LINK`；
+   - 提交后默认推送到 `origin/main`（用户明确要求暂不推送时除外）；
+   - 收工前 `git status` 必须是干净的。
 
 ## 3. 环境事实（2026-10 本机实测，改动机器请同步更新）
 
@@ -33,12 +38,14 @@
 | arm-none-eabi-gcc | 14.3.1 | `/opt/ST/STM32CubeCLT_1.22.0/GNU-tools-for-STM32/bin/` |
 | CMake | 4.3.1 | `/opt/ST/STM32CubeCLT_1.22.0/CMake/bin/cmake`（CubeMX2 要求 ≥ 3.30） |
 | Ninja | 随 CubeCLT | `/opt/ST/STM32CubeCLT_1.22.0/Ninja/bin/ninja` |
-| ST-LINK GDB server | 随 CubeCLT | `/opt/ST/STM32CubeCLT_1.22.0/STLink-gdb-server/bin/ST-LINK_gdbserver` |
+| ST-LINK GDB server | 随 CubeCLT | `/opt/ST/STM32CubeCLT_1.22.0/STLink-gdb-server/bin/ST-LINK_gdbserver`（CLion 内置 ST-LINK 使用它） |
 | STM32CubeProgrammer CLI | 2.23.0 | `/opt/ST/STM32CubeCLT_1.22.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI` |
 | SVD 文件 | 含 `STM32C542.svd` | `/opt/ST/STM32CubeCLT_1.22.0/STMicroelectronics_CMSIS_SVD/` |
 | CLion | 2026.1.1（文档同时适用于 2026.2） | `/Applications/CLion.app` |
-| OpenOCD（Homebrew） | 0.12.0+dev | **没有 `stm32c5x.cfg`**，不能用于 C5 下载/调试（见第 8 节） |
+| CLion ST-LINK | 内置调试模板 | `Settings > Build, Execution, Deployment > Debugger > Debug Servers`（2026.2 起为 `Debug Profiles`） |
 | Cube CLI | 可选 | `/Users/peakors/.local/stm32cube/bin/cube` |
+
+> **不使用 OpenOCD**：不引入 OpenOCD 配置，也不用它下载/调试。CLion 的 ST-LINK 模板通过 `ST-LINK_gdbserver` 连接 STLINK-V3EC，足以覆盖本仓库需求；且当前 OpenOCD 对 STM32C5 无支持。
 
 ## 4. 目录结构与命名
 
@@ -47,7 +54,7 @@
 ├── AGENTS.md              # 本文件
 ├── README.md              # 项目门面：速查表 + 文档/模板导航
 ├── docs/                  # 中文文档，NN-主题.md
-├── templates/             # 可复制的配置模板（OpenOCD、CLion 调试参数等）
+├── templates/             # 可复制的配置模板（CLion ST-LINK、工程清单等）
 ├── projects/              # 实际工程（每个工程一个子目录，尚未创建）
 └── .gitignore
 ```
@@ -64,40 +71,45 @@
 - 每个关键步骤给出**预期结果**（如“LD1 以 1 Hz 闪烁”“终端出现 `[OK]`”）。
 - 截图放在 `docs/images/<文档名>/`，文件名用英文短横线；不要提交超过 500 KB 的图片（必要时压缩）。
 - 引用外部资料用 Markdown 链接，并在文末「参考资料」列出。
+- 新增/重命名文档后，同步更新 `README.md` 与 `docs/README.md` 的索引，并检查相对链接。
 
 ## 6. 代码与工程规范
 
 - **CubeMX2 生成的文件不要手改**：`main.c` 只在 `/* USER CODE BEGIN */` 与 `/* USER CODE END */` 之间写代码。
-- 新增源文件放到工程内自建目录（如 `User/`），并加入 `CMakeLists.txt`；若 CMake 文件是生成的，改 `.ioc2` 的工程设置或使用 `CMakeLists.txt` 的模板保留区（如生成器支持）。
+- 新增源文件放到工程内自建目录（如 `User/`），并加入 `CMakeLists.txt`；若 CMake 文件是生成的，改 `.ioc2` 的工程设置或使用生成器保留区。
 - 命名：函数 `模块_动作()`（如 `led_init()`、`uart_send_string()`），宏全大写，全局变量加模块前缀。
 - 中断处理保持短小，业务逻辑放主循环或状态机。
 - 编译必须 **0 error**；新增 warning 需在提交说明里解释。
 
-## 7. 构建 / 烧录 / 调试命令
+## 7. 构建 / 下载 / 调试
 
 ```bash
 # 构建（在工程目录内，CubeMX2 生成 CMake 工程后）
-export PATH="/opt/ST/STM32CubeCLT_1.22.0/CMake/bin:$PATH"
+export PATH="/opt/ST/STM32CubeCLT_1.22.0/CMake/bin:/opt/ST/STM32CubeCLT_1.22.0/Ninja/bin:$PATH"
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug
 cmake --build build -j
 
-# 烧录 ELF（SWD，STLINK-V3EC）
+# 兜底：命令行烧录 ELF（CLion 内置 ST-LINK 是主路径，这条仅在无 GUI 时用）
 /opt/ST/STM32CubeCLT_1.22.0/STM32CubeProgrammer/bin/STM32_Programmer_CLI \
   -c port=SWD freq=4000 -w build/<PROJECT>.elf -v -rst
 
-# 手动起 GDB server（CLion 会代劳，排查时可单跑）
-cd /tmp && /opt/ST/STM32CubeCLT_1.22.0/STLink-gdb-server/bin/ST-LINK_gdbserver \
-  -cp /opt/ST/STM32CubeCLT_1.22.0/STM32CubeProgrammer/bin -d -p 61234
-
 # 串口（VCP = USART2 PA2/PA3，115200 8N1）
 ls /dev/cu.usbmodem* && screen /dev/cu.usbmodemXXXX 115200
+```
+
+- **日常下载与调试**：在 CLion 中用内置 **ST-LINK** 调试配置（`Run > Edit Configurations` 或 Debug Servers 模板），不要写 OpenOCD 的 `program` 命令。
+- CLion 会自动拉起 `/opt/ST/STM32CubeCLT_1.22.0/STLink-gdb-server/bin/ST-LINK_gdbserver`；手工排查时可单独运行：
+
+```bash
+cd /tmp && /opt/ST/STM32CubeCLT_1.22.0/STLink-gdb-server/bin/ST-LINK_gdbserver \
+  -cp /opt/ST/STM32CubeCLT_1.22.0/STM32CubeProgrammer/bin -d -p 61234
 ```
 
 > 输出文件名、构建目录以 CubeMX2 实际生成结果为准；上例是约定，不是生成器保证。
 
 ## 8. 已知限制
 
-- **OpenOCD 不支持 STM32C5**：Homebrew 0.12.0 与上游 master 均无 `tcl/target/stm32c5x.cfg`。C5 的下载/调试请用 ST-LINK GDB server 或 STM32CubeProgrammer；`templates/openocd/nucleo-c542rc.cfg` 仅作前瞻模板。
+- **不使用 OpenOCD**：本仓库不提供 OpenOCD 配置；下载/调试统一走 CLion 内置 ST-LINK。若有人提 PR 加 OpenOCD，默认拒绝（除非用户明确要求）。
 - **CubeMX2 重新生成不合并 CMake 改动**：手工改过 `CMakeLists.txt` 后再次生成会被覆盖/备份，务必把改动落到 `.ioc2` 或独立文件。
 - **CubeMX2 创建工程时不能选 pack 版本**（默认最新）；C5 若需固定 v2.0.0 pack，官方提供脚本（见 CubeMX2 Release limitations）。
 - **CubeMX2 要求 CMake ≥ 3.30**（本机 CubeCLT 为 4.3.1，满足）。
@@ -110,15 +122,15 @@ ls /dev/cu.usbmodem* && screen /dev/cu.usbmodemXXXX 115200
 | --- | --- |
 | 板卡特性、LED/按键/VCP/电源、STLINK-V3EC、256 KB Flash / 64 KB RAM、HSE 24 MHz、LD1=PA5、B1=PC13、BOOT0=PH2 | UM3615《STM32C5x2 Nucleo-64 board user manual》Rev 1（2026-02），<https://www.st.com/resource/en/user_manual/um3615-stm32c5.pdf> |
 | C5 系列 Cortex-M33 @144 MHz、CoreMark 593 | STM32C5 系列页 <https://www.st.com/en/microcontrollers-microprocessors/stm32c5-series.html> |
-| UART2/PA2/PA3 接 VCP、SB12/SB26/SB46 配置 | UM3615 表 11 |
+| USART2/PA2/PA3 接 VCP、SB12/SB26/SB46 配置 | UM3615 表 11 |
 | STM32CubeMX2 界面与生成流程 | STM32CubeMX2 官方文档 1.1.2，<https://dev.st.com/stm32cube-docs/stm32cubemx2/1.1.2/en/index.html> |
-| CLion 的 STM32 集成、ST-LINK GDB server 配置 | JetBrains CLion 文档，<https://www.jetbrains.com/help/clion/embedded-stm32.html> |
+| CLion 内置 ST-LINK 调试模板 | CLion Debug servers 文档，<https://www.jetbrains.com/help/clion/debug-servers.html> |
 
 ## 10. 提交前检查清单
 
-- [ ] 文档中的路径、版本号与第 3 节一致，或已更新第 3 节。
+- [ ] 改动已完成并自测；文档中的路径、版本号与第 3 节一致。
 - [ ] 没有提交 `build/`、`misc/`、`*.elf`、`*.bin`、`.DS_Store`。
 - [ ] 没有手改生成文件；变更来自 `.ioc2` 或 `USER CODE` 区。
-- [ ] 新增文档已在 `docs/README.md` 登记。
+- [ ] 新增文档已在 `docs/README.md` 与 `README.md` 登记。
 - [ ] 命令在本机可执行（至少 `--help` / `--version` 通过）。
-- [ ] 提交信息遵循 `type(scope): summary`（如 `docs(cubemx2): 补充时钟配置步骤`）。
+- [ ] **已 `git commit`**，提交信息符合 `type(scope): summary`，并已推送。
