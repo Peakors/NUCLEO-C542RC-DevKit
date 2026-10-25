@@ -1,0 +1,23 @@
+# 默认按文本处理，统一使用 LF 换行
+* text=auto eol=lf
+
+# 源码与脚本
+*.c      text
+*.h      text
+*.cpp    text
+*.hpp    text
+*.md     text
+*.txt    text
+*.cmake  text
+CMakeLists.txt text
+*.ioc    text
+
+# 二进制与归档文件不参与换行转换
+*.png    binary
+*.jpg    binary
+*.jpeg   binary
+*.gif    binary
+*.pdf    binary
+*.bin    binary
+*.hex    binary
+*.zip    binary
